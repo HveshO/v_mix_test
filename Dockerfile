@@ -1,14 +1,13 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app PYTHONUNBUFFERED=1
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
-COPY app /app/app
-COPY tests /app/tests
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8000
+COPY . .
 
-CMD ["bash", "-lc", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["bash", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

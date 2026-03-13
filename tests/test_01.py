@@ -9,10 +9,10 @@ def test_01(client):
 
     client.post(
         f"/runs/{run_id}/results",
-        json=[{"testExternalId": "t1", "status": "failed", "durationMs": 10}],
+        json=[{"externalId": "t1", "status": "failed", "durationMs": 10}],
     )
 
-    r = client.get("/flaky?window=0&minFailRate=0.1")
+    r = client.get("/flaky?window=10&minFailRate=0.1")
     assert r.status_code == 200
 
     data = r.json()

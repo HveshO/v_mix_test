@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from enum import Enum
 
 
 class CreateRunRequest(BaseModel):
-    branch: str | None = None
+    branch: str | None = Field(None, max_length=128)
 
 
 class CreateRunResponse(BaseModel):
@@ -10,9 +11,9 @@ class CreateRunResponse(BaseModel):
 
 
 class CreateCaseRequest(BaseModel):
-    externalId: str
-    name: str
-    owner: str | None = None
+    externalId: str = Field(..., max_length=512)
+    name: str = Field(..., max_length=512)
+    owner: str | None = Field(None, max_length=128)
     isQuarantined: bool = False
 
 
@@ -21,11 +22,17 @@ class CreateCaseResponse(BaseModel):
     externalId: str
 
 
+class StatusEnum(str, Enum):
+    PASSED = "passed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
 class PostResultItem(BaseModel):
-    testExternalId: str
-    status: str = Field(pattern="^(passed|failed|skipped)$")
-    durationMs: int | None = None
-    errorMessage: str | None = None
+    externalId: str = Field(..., max_length=512)
+    status: StatusEnum
+    durationMs: int | None = Field(None, ge=0)
+    errorMessage: str | None = Field(None, max_length=4096)
 
 
 class PostResultsResponse(BaseModel):
@@ -35,19 +42,19 @@ class PostResultsResponse(BaseModel):
 class ResultResponse(BaseModel):
     id: int
     runId: int
-    testExternalId: str
+    externalId: str
     status: str
     durationMs: int | None
     errorMessage: str | None
 
 
 class FlakyItem(BaseModel):
-    testExternalId: str
+    externalId: str
     name: str | None = None
     owner: str | None = None
     isQuarantined: bool | None = None
     failedCount: int
     passedCount: int
     skippedCount: int
-    totalRuns: int
+    totalCount: int
     failRate: float
